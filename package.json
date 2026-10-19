@@ -1,0 +1,78 @@
+{
+  "name": "dsh-novel-reader",
+  "version": "1.0.0",
+  "description": "拾页：本地小说阅读器侧栏插件",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ],
+      "platform": "web"
+    },
+    "bundle": {
+      "patch": [
+        "./cordis.patch.yml"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test",
+    "check": "node --check lib/client.js && node scripts/verify-package.mjs",
+    "prepack": "node build.mjs"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "locale/*.json",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "qiufengsir",
+    "url": "https://github.com/qiufengsir"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qiufengsir/dsh-novel-reader.git"
+  },
+  "homepage": "https://github.com/qiufengsir/dsh-novel-reader#readme",
+  "bugs": {
+    "url": "https://github.com/qiufengsir/dsh-novel-reader/issues"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "novel-reader",
+    "txt",
+    "sidebar"
+  ],
+  "engines": {
+    "node": ">=22",
+    "dsh": "0.2.1-rc.2"
+  },
+  "icon": "./icon.svg",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-client-ui-sidebar-right": "0.2.1-rc.2",
+    "react": "^18.2.0"
+  }
+}

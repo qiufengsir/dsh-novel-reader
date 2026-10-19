@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><link rel="icon" href="data:," /><title>拾页 · 小说阅读器预览</title
+  ><link rel="stylesheet" href="src/reader.css" /><style>
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background: #e5e8e2;
+    }
+    #reader {
+      height: 100%;
+      max-width: 540px;
+      margin: auto;
+      box-shadow: 0 0 50px #26352820;
+    }
+  </style>
+  <div id="reader"></div>
+  <script src="src/core.cjs"></script>
+  <script src="src/reader.js"></script>
+  <script>
+    mountReader(document.getElementById("reader"));
+  </script>
+</html>

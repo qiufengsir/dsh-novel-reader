@@ -1,0 +1,10 @@
+node_modules/
+output/
+.playwright-cli/
+*.tgz
+*.log
+.env
+.env.*
+*.bak
+.DS_Store
+Thumbs.db

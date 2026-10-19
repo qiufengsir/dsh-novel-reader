@@ -1,0 +1,328 @@
+.nr {
+  --paper: #f7f3e9;
+  --ink: #353c35;
+  --muted: #7d8375;
+  --line: #dedfd2;
+  --accent: #52715a;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font:
+    13px/1.5 system-ui,
+    "Microsoft YaHei",
+    sans-serif;
+  container-type: inline-size;
+}
+.nr * {
+  box-sizing: border-box;
+}
+.nr[data-theme="night"] {
+  --paper: #202722;
+  --ink: #d5dccd;
+  --muted: #a1ad9c;
+  --line: #3a473c;
+  --accent: #aac59b;
+}
+.nr[data-theme="white"] {
+  --paper: #fff;
+  --ink: #323a40;
+  --muted: #707981;
+  --line: #e3e7eb;
+  --accent: #476d89;
+}
+.nr[data-theme="green"] {
+  --paper: #e8f0e2;
+  --ink: #34432f;
+  --muted: #6e8166;
+  --line: #ccd9c4;
+  --accent: #4e7041;
+}
+.nr button,
+.nr select,
+.nr input,
+.nr textarea {
+  font: inherit;
+  color: inherit;
+}
+.nr button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: transparent;
+  border-radius: 9px;
+  padding: 7px 10px;
+}
+.nr button:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.nr button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.nr button:focus-visible,
+.nr input:focus-visible,
+.nr select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.nr .primary {
+  background: var(--accent);
+  color: var(--paper);
+  border-color: var(--accent);
+}
+.nr header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 17px 18px 10px;
+}
+.nr .brand {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: 2px;
+}
+.nr small,
+.nr .muted {
+  color: var(--muted);
+}
+.nr nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.nr nav button {
+  border: 0;
+  padding: 6px 9px;
+}
+.nr nav button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--paper);
+}
+.nr main {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 20px;
+}
+.nr .hero {
+  padding: 32px 4px 24px;
+}
+.nr .eyebrow {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--accent);
+}
+.nr h1 {
+  font:
+    500 29px/1.4 Georgia,
+    "Songti SC",
+    SimSun,
+    serif;
+  margin: 10px 0;
+}
+.nr h2 {
+  font-size: 17px;
+  font-weight: 550;
+}
+.nr .card {
+  display: flex;
+  gap: 13px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.nr .cover {
+  width: 44px;
+  height: 61px;
+  border-radius: 3px 7px 7px 3px;
+  background: var(--accent);
+  color: var(--paper);
+  display: grid;
+  place-items: center;
+  box-shadow: inset 4px 0 #ffffff20;
+  font: 22px SimSun;
+  flex-shrink: 0;
+}
+.nr .card .info {
+  flex: 1;
+  min-width: 0;
+}
+.nr .title {
+  display: block;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+.nr .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.nr .stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.nr input:not([type="range"]):not([type="color"]),
+.nr textarea,
+.nr select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 9px;
+  max-width: 100%;
+}
+.nr input[type="search"] {
+  width: 100%;
+}
+.nr .empty {
+  padding: 46px 12px;
+  text-align: center;
+  color: var(--muted);
+}
+.nr .empty b {
+  font-size: 38px;
+  color: var(--accent);
+  display: block;
+  font-weight: 400;
+}
+.nr .listitem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 12px 4px;
+}
+.nr article {
+  max-width: 760px;
+  margin: auto;
+  font-family: var(--reader-font, SimSun, serif);
+  font-size: var(--reader-size, 18px);
+  line-height: var(--reader-leading, 1.9);
+  overflow-wrap: anywhere;
+}
+.nr article h2 {
+  font-family: inherit;
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 10px 0 28px;
+}
+.nr article p {
+  white-space: pre-wrap;
+  text-indent: 2em;
+  margin: 0.7em 0;
+  scroll-margin-top: 20px;
+}
+.nr article p.marked {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-left: 2px solid var(--accent);
+}
+.nr mark {
+  background: #eedc8a;
+  color: #292c21;
+}
+.nr footer {
+  padding: 9px 14px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: stretch;
+  font-size: 11px;
+  color: var(--muted);
+}
+.nr .chapter-progress, .nr .reading-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.nr .chapter-progress-label { white-space: nowrap; min-width: 64px; font-variant-numeric: tabular-nums; }
+.nr .reading-summary { justify-content: space-between; flex-wrap: wrap; }
+.nr .return-position { font-size: 11px; padding: 3px 7px; }
+.nr .chapter-end { max-width: 760px; margin: 32px auto 8px; border-top: 1px solid var(--line); padding-top: 20px; text-align: center; }
+.nr .chapter-navigation { display: flex; gap: 12px; margin: 16px 0 10px; }
+.nr .chapter-navigation button { flex: 1; padding: 13px; }
+.nr .chapter-end > small { display: block; overflow-wrap: anywhere; }
+.nr .chapter-source { text-align: left; margin-top: 24px; color: var(--muted); }
+.nr .chapter-source summary { cursor: pointer; }
+.nr .chapter-source pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.9; color: var(--ink); }
+.nr article h2 { white-space: pre-wrap; }
+.nr footer input {
+  width: 100%;
+  min-width: 40px;
+  accent-color: var(--accent);
+}
+.nr .notice {
+  padding: 9px 14px;
+  background: #ab572015;
+  color: var(--ink);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.nr .notice span {
+  flex: 1;
+}
+.nr label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.nr progress {
+  width: 100%;
+  height: 3px;
+  accent-color: var(--accent);
+}
+.nr .note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.nr .danger {
+  color: #b15340;
+}
+.nr .drop {
+  outline: 2px dashed var(--accent);
+  outline-offset: -8px;
+}
+@container (max-width:340px) {
+  .nr header {
+    padding: 12px;
+  }
+  .nr main {
+    padding: 14px;
+  }
+  .nr nav {
+    gap: 0;
+    padding: 6px;
+  }
+  .nr nav button {
+    padding: 6px 7px;
+  }
+  .nr .card {
+    flex-wrap: wrap;
+  }
+  .nr .brand {
+    font-size: 15px;
+  }
+}
+
+.nr [hidden] {
+  display: none !important;
+}
+.nr textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+}
