@@ -1,7 +1,7 @@
 {
-  "name": "dsh-novel-reader",
-  "version": "1.0.0",
-  "description": "拾页：本地小说阅读器侧栏插件",
+  "name": "dsh-zhijian-reader",
+  "version": "1.0.1",
+  "description": "纸间：本地小说阅读器侧栏插件",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -26,7 +26,7 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "test": "node --test",
+    "test": "node --test test/core.test.cjs test/integration.test.cjs test/storage-compatibility.test.cjs",
     "check": "node --check lib/client.js && node scripts/verify-package.mjs",
     "prepack": "node build.mjs"
   },
@@ -46,11 +46,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/qiufengsir/dsh-novel-reader.git"
+    "url": "git+https://github.com/qiufengsir/dsh-zhijian-reader.git"
   },
-  "homepage": "https://github.com/qiufengsir/dsh-novel-reader#readme",
+  "homepage": "https://github.com/qiufengsir/dsh-zhijian-reader#readme",
   "bugs": {
-    "url": "https://github.com/qiufengsir/dsh-novel-reader/issues"
+    "url": "https://github.com/qiufengsir/dsh-zhijian-reader/issues"
   },
   "keywords": [
     "dsh-plugin",

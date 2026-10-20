@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
-assert.equal(manifest.name, "dsh-novel-reader");
+assert.equal(manifest.name, "dsh-zhijian-reader");
 assert.equal(manifest.license, "MIT");
 assert.equal(manifest.engines.dsh, "0.2.1-rc.2");
 assert.equal(manifest.peerDependencies["@deepseek-ai/cordis"], manifest.devDependencies["@deepseek-ai/cordis"]);
@@ -18,7 +18,7 @@ assert.ok(manifest.dsh.client.inject.includes("@deepseek-ai/dsh-client-ui-sideba
 for (const relative of manifest.dsh.bundle.patch) {
   const patch = fs.readFileSync(path.resolve(root, relative), "utf8");
   assert.match(patch, /- insert:/);
-  assert.match(patch, /name: dsh-novel-reader/);
+  assert.match(patch, /name: dsh-zhijian-reader/);
 }
 for (const filename of ["lib/index.js", "lib/client.js", "icon.svg", "LICENSE", "README.md"]) {
   assert.ok(fs.statSync(path.join(root, filename)).size > 0, "Missing " + filename);
@@ -33,6 +33,6 @@ for (const locale of ["en", "zh"]) {
 assert.ok(fs.statSync(path.join(root, manifest.icon)).size < 256 * 1024);
 const client = fs.readFileSync(path.join(root, "lib/client.js"), "utf8");
 assert.ok(client.startsWith("window.__ModuleLoader__.load("));
-assert.ok(client.includes('"dsh-novel-reader"'));
+assert.ok(client.includes('"dsh-zhijian-reader"'));
 assert.ok(!manifest.scripts.install && !manifest.scripts.postinstall, "No install-time execution required");
 console.log("Plugin manifest, exports, bundle, client, locales and distributable files verified.");
