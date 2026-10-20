@@ -41,7 +41,7 @@ for (const target of [
   path.join(profile, "node_modules", "dsh-novel-reader"),
 ]) {
   fs.mkdirSync(target, { recursive: true });
-  for (const item of ["package.json", "cordis.patch.yml", "lib"])
+  for (const item of ["package.json", "cordis.patch.yml", "lib", "locale", "icon.svg", "README.md", "docs", "LICENSE"])
     fs.cpSync(path.join(source, item), path.join(target, item), {
       recursive: true,
     });

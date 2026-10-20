@@ -1,6 +1,6 @@
 {
   "name": "dsh-novel-reader",
-  "version": "1.0.0",
+  "version": "1.1.0-beta.1",
   "description": "拾页：本地小说阅读器侧栏插件",
   "type": "module",
   "main": "lib/index.js",
@@ -14,7 +14,9 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-ui-sidebar-right"
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-api-session-controller"
       ],
       "platform": "web"
     },
@@ -37,6 +39,7 @@
     "icon.svg",
     "cordis.patch.yml",
     "README.md",
+    "docs/TASK_LINKING.md",
     "LICENSE"
   ],
   "license": "MIT",
@@ -73,6 +76,8 @@
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
     "@deepseek-ai/dsh-client-ui-sidebar-right": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-session": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.2",
     "react": "^18.2.0"
   }
 }

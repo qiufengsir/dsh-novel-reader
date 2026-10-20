@@ -1,4 +1,4 @@
-function mountReader(root) {
+function mountReader(root, { taskSource } = {}) {
   const C = globalThis.NovelReaderCore;
   let db,
     books = [],
@@ -10,6 +10,7 @@ function mountReader(root) {
     disposed = false,
     write = Promise.resolve(),
     saveTimer,
+    searchTimer,
     restoreFrame,
     restoring = false,
     renderRevision = 0,
@@ -18,7 +19,11 @@ function mountReader(root) {
     chapterSlider,
     chapterLabel,
     bookLabel,
-    returnButton;
+    returnButton,
+    readingLocked = false;
+  let task = taskSource?.getSnapshot() || { phase: "unlinked", canRead: true, noticeId: 0 };
+  let lastTaskNotice = task.noticeId || 0;
+  let lastTaskSession = task.sessionId;
   const jumpHistory = [];
   let settings = {
     theme: "paper",
@@ -27,6 +32,7 @@ function mountReader(root) {
     leading: 1.9,
     encoding: "auto",
     background: "",
+    taskFocus: false,
   };
   const el = (tag, attrs = {}, ...children) => {
     const n = document.createElement(tag);
@@ -75,8 +81,109 @@ function mountReader(root) {
   const nav = el("nav", { "aria-label": "阅读器功能" }),
     notice = el("div", { class: "notice", role: "status", hidden: "" }),
     main = el("main", { tabindex: "0" }),
-    footer = el("footer");
-  root.append(header, nav, notice, main, footer);
+    footer = el("footer"),
+    taskBar = el("section", { class: "task-bar", "aria-label": "dsh 任务联动" }),
+    taskStatus = el("span", { class: "task-status", role: "status", "aria-live": "polite" }),
+    taskTitle = el("small", { class: "task-title" }),
+    focusButton = button("联动专注", toggleTaskFocus, { class: "task-focus", "aria-pressed": "false" }),
+    taskNotice = el("section", { class: "task-notice", role: "status", "aria-live": "polite", hidden: "" }),
+    lockTitle = el("h2", { id: "nr-lock-title", tabindex: "-1" }),
+    lockDescription = el("p", {}),
+    lock = el("section", { class: "focus-lock", hidden: "", "aria-labelledby": "nr-lock-title" },
+      el("div", { class: "lock-card" },
+        el("span", { class: "lock-mark", "aria-hidden": "true" }, "Ⅱ"),
+        el("div", { class: "eyebrow" }, "TIME TO BUILD"),
+        lockTitle, lockDescription,
+        el("small", {}, "阅读位置已保留 · 新需求被 dsh 接受后自动解锁"))),
+    stage = el("div", { class: "reader-stage" }, main, lock);
+  taskBar.append(el("div", { class: "task-context" }, taskStatus, taskTitle), focusButton);
+  root.append(header, nav, taskBar, taskNotice, notice, stage, footer);
+  function toggleTaskFocus() {
+    settings.taskFocus = !settings.taskFocus;
+    if (db) persistSettings();
+    updateTaskUI();
+  }
+  function updateTaskUI() {
+    const labels = {
+      unlinked: "独立阅读 · 未连接 dsh", connecting: "正在连接当前会话…",
+      idle: "等待新的开发需求", running: "dsh 正在执行 · 可以阅读",
+      waiting: "dsh 正在等待你的确认", completed: "本轮任务已完成",
+      stopped: "本轮执行已停止", error: "本轮执行遇到问题",
+    };
+    const linked = !["unlinked", "connecting"].includes(task.phase);
+    if (task.phase === "running" && !task.canRead) labels.running = "dsh 正在执行 · 专注仍待解锁";
+    taskBar.dataset.phase = task.phase;
+    taskStatus.textContent = labels[task.phase] || labels.unlinked;
+    taskTitle.textContent = task.title || (taskSource?.preview ? "预览模拟 · 不会执行真实任务" : "仅跟随当前会话");
+    taskTitle.title = taskTitle.textContent;
+    focusButton.setAttribute("aria-pressed", String(settings.taskFocus === true));
+    focusButton.title = "开启后，只在当前开发任务执行期间阅读；本轮完成后等待新的需求";
+    // Keep connecting conservative when the host source is present; standalone reading remains usable.
+    const shouldLock = settings.taskFocus === true && !!taskSource && task.phase !== "unlinked" &&
+      task.canRead !== true && view !== "settings";
+    const wasLocked = readingLocked;
+    const hadReaderFocus = main.contains(document.activeElement) || footer.contains(document.activeElement);
+    if (shouldLock && !readingLocked) {
+      checkpoint();
+      persistPosition();
+      const selection = window.getSelection();
+      if (selection?.anchorNode && main.contains(selection.anchorNode)) selection.removeAllRanges();
+    }
+    readingLocked = shouldLock;
+    stage.classList.toggle("task-locked", shouldLock);
+    main.inert = shouldLock;
+    if (shouldLock) main.setAttribute("aria-hidden", "true");
+    else main.removeAttribute("aria-hidden");
+    footer.style.visibility = shouldLock ? "hidden" : "";
+    footer.inert = shouldLock;
+    lock.hidden = !shouldLock;
+    lockTitle.textContent = task.phase === "completed" ? "任务已完成，回到项目吧" :
+      task.phase === "connecting" ? "正在确认任务状态" : "先提出一个新的开发需求";
+    lockDescription.textContent = task.phase === "completed"
+      ? "这一轮的开发已经结束。去看看结果，提交下一条需求后，再回来继续故事。"
+      : task.phase === "connecting" ? "连接当前 dsh 会话后，会自动恢复可用的阅读状态。"
+      : "联动专注已开启。在当前会话提交新的需求，dsh 接受后即可继续阅读。";
+    if (shouldLock && hadReaderFocus) lockTitle.focus({ preventScroll: true });
+    if (wasLocked && !shouldLock && view === "read" && book && !restoring) {
+      // Layout may have changed while locked (for example dismissing a notice).
+      // Restore the saved paragraph rather than checkpointing a hidden viewport.
+      restoring = true;
+      const revision = renderRevision;
+      restoreFrame = requestAnimationFrame(() => {
+        if (disposed || revision !== renderRevision) return;
+        const target = main.querySelector(`[data-line="${book.line || 0}"]`);
+        if (book.atTop) main.scrollTop = 0;
+        else if (target) {
+          const rect = target.getBoundingClientRect();
+          main.scrollTop += rect.top - main.getBoundingClientRect().top + rect.height * (book.offset || 0);
+        }
+        restoreFrame = requestAnimationFrame(() => {
+          if (disposed || revision !== renderRevision) return;
+          restoring = false;
+          updateFooterValues();
+        });
+      });
+    }
+    root.dataset.taskLinked = String(linked);
+  }
+  const stopTask = taskSource?.subscribe(() => {
+    task = taskSource.getSnapshot();
+    if (task.sessionId !== lastTaskSession) {
+      lastTaskSession = task.sessionId;
+      lastTaskNotice = task.noticeId || 0;
+      taskNotice.hidden = true;
+    } else if ((task.noticeId || 0) > lastTaskNotice) {
+      lastTaskNotice = task.noticeId;
+      const text = task.phase === "completed" ? "任务已经完成，回到项目查看结果吧。" :
+        task.phase === "error" ? "本轮执行遇到问题，请回到项目查看。" : "本轮执行已停止，请回到项目查看。";
+      taskNotice.replaceChildren(el("div", {}, el("strong", {}, task.phase === "completed" ? "✓ 本轮任务已完成" : "请留意开发任务"), el("p", {}, text)),
+        button("知道了", () => { taskNotice.hidden = true; }));
+      taskNotice.hidden = false;
+    }
+    if (task.phase === "running" && task.canRead) taskNotice.hidden = true;
+    updateTaskUI();
+  });
+  updateTaskUI();
   function message(text) {
     notice.replaceChildren(
       el("span", {}, text),
@@ -139,7 +246,7 @@ function mountReader(root) {
     else root.style.removeProperty("--paper");
   }
   function checkpoint() {
-    if (view !== "read" || !book || restoring) return;
+    if (view !== "read" || !book || restoring || readingLocked) return;
     const paras = main.querySelectorAll("[data-line]");
     const top = main.getBoundingClientRect().top;
     let found;
@@ -255,6 +362,7 @@ function mountReader(root) {
   }
   function render() {
     if (disposed) return;
+    clearTimeout(searchTimer);
     cancelAnimationFrame(restoreFrame);
     const revision = ++renderRevision;
     restoring = view === "read" && !!book;
@@ -415,8 +523,8 @@ function mountReader(root) {
           "aria-label": "搜索正文",
         }),
         results = el("div");
-      let timer;
       const show = () => {
+        if (disposed || view !== "search") return;
         query = field.value.trim();
         results.replaceChildren();
         const hits = C.search(lines, query);
@@ -439,8 +547,8 @@ function mountReader(root) {
           );
       };
       field.addEventListener("input", () => {
-        clearTimeout(timer);
-        timer = setTimeout(show, 200);
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(show, 200);
       });
       main.append(field, results);
       show();
@@ -480,6 +588,7 @@ function mountReader(root) {
       }
     }
     updateFooter();
+    updateTaskUI();
   }
   function shelfList(list, filter) {
     list.replaceChildren();
@@ -620,6 +729,10 @@ function mountReader(root) {
     main.append(
       el("h2", {}, "让阅读更合心意"),
       el("p", { class: "muted" }, "设置自动保存，适用于整个本地书架。"),
+      el("section", { class: "task-help" },
+        el("strong", {}, "开发时读书，完成后回到项目"),
+        el("p", {}, "顶部「联动专注」开启后，当前会话的一轮任务正常完成时会锁住小说。新的用户需求被 dsh 接受后自动解锁；等待确认、失败和手动停止会分别显示状态。"),
+        el("small", {}, "可随时从顶部关闭联动专注。独立预览未连接 dsh 时保持正常阅读；页面内提醒不需要系统通知权限。")),
     );
     const stack = el("div", { class: "stack" });
     main.append(stack);
@@ -800,16 +913,19 @@ function mountReader(root) {
       message(`已导入 ${count} 本。${errors.join("；")}`);
     }
   }
-  root.addEventListener("dragover", (e) => {
+  const onDragOver = (e) => {
     e.preventDefault();
     root.classList.add("drop");
-  });
-  root.addEventListener("dragleave", () => root.classList.remove("drop"));
-  root.addEventListener("drop", (e) => {
+  };
+  const onDragLeave = () => root.classList.remove("drop");
+  const onDrop = (e) => {
     e.preventDefault();
     root.classList.remove("drop");
     importFiles(e.dataTransfer.files);
-  });
+  };
+  root.addEventListener("dragover", onDragOver);
+  root.addEventListener("dragleave", onDragLeave);
+  root.addEventListener("drop", onDrop);
   const unload = () => {
     clearTimeout(saveTimer);
     checkpoint();
@@ -860,10 +976,15 @@ function mountReader(root) {
   return () => {
     checkpoint();
     disposed = true;
+    stopTask?.();
     clearTimeout(saveTimer);
+    clearTimeout(searchTimer);
     cancelAnimationFrame(restoreFrame);
     persistPosition();
     window.removeEventListener("pagehide", unload);
+    root.removeEventListener("dragover", onDragOver);
+    root.removeEventListener("dragleave", onDragLeave);
+    root.removeEventListener("drop", onDrop);
     resizeObserver.disconnect();
     write.finally(() => db?.close());
     root.replaceChildren();

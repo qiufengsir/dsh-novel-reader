@@ -23,7 +23,7 @@ test("client module registers and disposes the expected sidebar slot", () => {
     fs.readFileSync(path.join(__dirname, "../lib/client.js"), "utf8"),
     browser,
   );
-  assert.deepEqual(Array.from(plugin.inject), ["slots", "sidebarRightTabs"]);
+  assert.deepEqual(Array.from(plugin.inject), ["slots", "sidebarRightTabs", "sessions", "uiSession"]);
   browser.document = {
     createElement: () => ({
       remove() {
@@ -100,6 +100,11 @@ test("installer preserves existing profile and is idempotent", () => {
         path.join(directory, "node_modules/dsh-novel-reader/lib/client.js"),
       ),
     );
+    for (const target of ["plugins", "node_modules"]) {
+      for (const file of ["locale/zh.json", "locale/en.json", "icon.svg", "LICENSE"]) {
+        assert.ok(fs.existsSync(path.join(directory, target, "dsh-novel-reader", file)), "Missing installed " + file);
+      }
+    }
     fs.writeFileSync(path.join(directory, "lock"), "1");
     assert.throws(run);
   } finally {

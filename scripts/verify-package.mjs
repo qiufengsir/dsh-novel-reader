@@ -15,6 +15,10 @@ assert.equal(manifest.exports["./client"], "./lib/client.js");
 assert.equal(manifest.exports["./package.json"], "./package.json");
 assert.equal(manifest.dsh.client.platform, "web");
 assert.ok(manifest.dsh.client.inject.includes("@deepseek-ai/dsh-client-ui-sidebar-right"));
+for (const dependency of ["@deepseek-ai/dsh-client-ui-session", "@deepseek-ai/dsh-api-session-controller"]) {
+  assert.ok(manifest.dsh.client.inject.includes(dependency));
+  assert.equal(manifest.devDependencies[dependency], manifest.engines.dsh);
+}
 for (const relative of manifest.dsh.bundle.patch) {
   const patch = fs.readFileSync(path.resolve(root, relative), "utf8");
   assert.match(patch, /- insert:/);

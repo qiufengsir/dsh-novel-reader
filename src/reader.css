@@ -111,6 +111,68 @@
   overscroll-behavior: contain;
   padding: 20px;
 }
+.nr .reader-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  position: relative;
+}
+.nr .task-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--accent) 5%, var(--paper));
+}
+.nr .task-context { flex: 1; min-width: 0; }
+.nr .task-status { display: block; font-size: 12px; font-weight: 600; }
+.nr .task-status::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 7px;
+  background: var(--muted);
+}
+.nr .task-bar[data-phase="running"] .task-status::before,
+.nr .task-bar[data-phase="completed"] .task-status::before { background: var(--accent); }
+.nr .task-bar[data-phase="waiting"] .task-status::before,
+.nr .task-bar[data-phase="error"] .task-status::before { background: #b07837; }
+.nr .task-title { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; margin-top: 2px; }
+.nr .task-focus { flex-shrink: 0; font-size: 11px; padding: 6px 9px; }
+.nr .task-focus[aria-pressed="true"] { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+.nr .task-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--accent) 13%, var(--paper));
+}
+.nr .task-notice > div { flex: 1; min-width: 0; }
+.nr .task-notice strong { font-size: 13px; }
+.nr .task-notice p { margin: 3px 0 0; font-size: 11px; }
+.nr .task-notice button { flex-shrink: 0; font-size: 11px; }
+.nr .focus-lock {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-items: center;
+  overflow: auto;
+  padding: 28px 24px;
+  text-align: center;
+  background: var(--paper);
+}
+.nr .task-locked main { visibility: hidden; }
+.nr .lock-card { max-width: 320px; margin: auto; }
+.nr .lock-mark { display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid var(--line); border-radius: 18px; color: var(--accent); font-size: 23px; margin: 0 auto 22px; }
+.nr .focus-lock h2 { font: 500 22px/1.5 "Songti SC",SimSun,serif; margin: 12px 0; }
+.nr .focus-lock p { line-height: 1.9; color: var(--muted); margin-bottom: 24px; }
+.nr .focus-lock small { font-size: 11px; }
+.nr .task-help { margin: 18px 0 24px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; }
+.nr .task-help p { color: var(--muted); line-height: 1.8; }
 .nr .hero {
   padding: 32px 4px 24px;
 }
