@@ -15,7 +15,7 @@ test("client module registers and disposes the expected sidebar slot", () => {
   browser.globalThis = browser;
   browser.__ModuleLoader__ = {
     load(m) {
-      assert.equal(m.id, "dsh-novel-reader");
+      assert.equal(m.id, "dsh-zhijian-reader");
       plugin = m.factory(() => ({}));
     },
   };
@@ -55,12 +55,42 @@ test("client module registers and disposes the expected sidebar slot", () => {
       },
     },
   });
-  assert.equal(definition.kind, "novel-reader");
+  assert.equal(definition.kind, "dsh-zhijian-reader");
+  assert.equal(definition.title(), "纸间 · 小说阅读器");
   assert.equal(registration.key, definition.id);
-  assert.equal(definition.guide[0].title(), "小说阅读器");
+  assert.equal(typeof browser.ZhijianReaderCore.decode, "function");
+  assert.equal(browser.NovelReaderCore, undefined);
+  assert.equal(definition.guide[0].title(), "纸间 · 小说阅读器");
   disposers.reverse().forEach((fn) => fn?.());
   assert.equal(removed, true);
 });
+test("renamed installer disables the legacy entry without deleting its files or user overrides", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "zhijian-migration-"));
+  try {
+    const manifestPath = path.join(directory, "package.json");
+    fs.writeFileSync(manifestPath, JSON.stringify({
+      private: true,
+      dependencies: { existing: "1.0.0", "dsh-novel-reader": "file:./plugins/dsh-novel-reader" },
+      dsh: { profile: { bundles: ["existing", "dsh-novel-reader", "dsh-zhijian-reader", "dsh-novel-reader"] } },
+    }));
+    const legacyDirectory = path.join(directory, "plugins/dsh-novel-reader");
+    fs.mkdirSync(legacyDirectory, { recursive: true });
+    fs.writeFileSync(path.join(legacyDirectory, "keep-me.txt"), "legacy rollback files");
+    fs.writeFileSync(path.join(directory, "cordis.patch.yml"), "# user overrides\n[]\n");
+    const run = () => cp.execFileSync(process.execPath,
+      [path.join(__dirname, "../install.mjs"), "--profile", directory], { stdio: "pipe" });
+    run();
+    run();
+    const installed = JSON.parse(fs.readFileSync(manifestPath));
+    assert.deepEqual(installed.dsh.profile.bundles, ["existing", "dsh-zhijian-reader"]);
+    assert.equal(installed.dependencies["dsh-novel-reader"], undefined);
+    assert.equal(installed.dependencies["dsh-zhijian-reader"], "file:./plugins/dsh-zhijian-reader");
+    assert.equal(installed.dependencies.existing, "1.0.0");
+    assert.equal(fs.readFileSync(path.join(legacyDirectory, "keep-me.txt"), "utf8"), "legacy rollback files");
+    assert.equal(fs.readFileSync(path.join(directory, "cordis.patch.yml"), "utf8"), "# user overrides\n[]\n");
+  } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});
+
 test("installer preserves existing profile and is idempotent", () => {
   const directory = fs.mkdtempSync(
     path.join(os.tmpdir(), "novel-reader-check-"),
@@ -89,7 +119,7 @@ test("installer preserves existing profile and is idempotent", () => {
     run();
     run();
     const m = JSON.parse(fs.readFileSync(p));
-    assert.deepEqual(m.dsh.profile.bundles, ["existing", "dsh-novel-reader"]);
+    assert.deepEqual(m.dsh.profile.bundles, ["existing", "dsh-zhijian-reader"]);
     assert.equal(m.dependencies.existing, "1.0.0");
     assert.equal(
       fs.readFileSync(path.join(directory, "cordis.patch.yml"), "utf8"),
@@ -97,12 +127,12 @@ test("installer preserves existing profile and is idempotent", () => {
     );
     assert.ok(
       fs.existsSync(
-        path.join(directory, "node_modules/dsh-novel-reader/lib/client.js"),
+        path.join(directory, "node_modules/dsh-zhijian-reader/lib/client.js"),
       ),
     );
     for (const target of ["plugins", "node_modules"]) {
       for (const file of ["locale/zh.json", "locale/en.json", "icon.svg", "LICENSE"]) {
-        assert.ok(fs.existsSync(path.join(directory, target, "dsh-novel-reader", file)), "Missing installed " + file);
+        assert.ok(fs.existsSync(path.join(directory, target, "dsh-zhijian-reader", file)), "Missing installed " + file);
       }
     }
     fs.writeFileSync(path.join(directory, "lock"), "1");

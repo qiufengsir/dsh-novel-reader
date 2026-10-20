@@ -1,13 +1,15 @@
-# dsh-novel-reader · 拾页
+# dsh-zhijian-reader · 纸间
 
-[![Plugin checks](https://github.com/qiufengsir/dsh-novel-reader/actions/workflows/ci.yml/badge.svg)](https://github.com/qiufengsir/dsh-novel-reader/actions/workflows/ci.yml)
+[![Plugin checks](https://github.com/qiufengsir/dsh-zhijian-reader/actions/workflows/ci.yml/badge.svg)](https://github.com/qiufengsir/dsh-zhijian-reader/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 在 DeepSeek Harness 右侧栏里，安静读一本本地小说。
 
-**拾页**是面向 DeepSeek Harness 的第三方小说阅读器插件。支持本地 TXT 书架、章节导航、章内进度、书签摘记及阅读外观设置；小说正文保存在设备本地，不发送给模型。
+**纸间**是面向 DeepSeek Harness 的第三方小说阅读器插件。支持本地 TXT 书架、章节导航、章内进度、书签摘记及阅读外观设置；小说正文保存在设备本地，不发送给模型。
 
-当前源码新增 **1.1.0-beta.1 开发任务联动**。公开的 `v1.0.0` 尚不包含这项功能；可用下方本地辅助安装器安装本轮源码进行验证。
+当前源码新增 **1.1.0-beta.2 开发任务联动**。更名稳定版 `v1.0.1` 尚不包含这项功能；可用下方本地辅助安装器安装本轮源码进行验证。
+
+项目由「拾页 / dsh-novel-reader」更名为「纸间 / dsh-zhijian-reader」。本地辅助安装器会停用旧包入口并启用新包，保留旧插件文件、用户配置和同一份书架数据。更名前的 `v1.0.0` 标签与发布保留为历史记录；旧的右侧栏标签可关闭后重新打开「纸间 · 小说阅读器」，无需清理书架或应用数据。
 
 ## 安装
 
@@ -17,13 +19,13 @@
 2. 输入以下 Git 安装地址：
 
    ```text
-   git+https://github.com/qiufengsir/dsh-novel-reader.git#v1.0.0
+   git+https://github.com/qiufengsir/dsh-zhijian-reader.git#v1.0.1
    ```
 
-3. 完成安装并启用 **拾页 · 小说阅读器**；如提示需要重启，请重启应用。
+3. 完成安装并启用 **纸间 · 小说阅读器**；如提示需要重启，请重启应用。
 4. 打开一个会话，在右侧栏开始页选择 **小说阅读器**。
 
-仓库提交了构建好的 `lib/`，通过 Git 地址安装不需要在安装时执行构建脚本。插件包名是 `dsh-novel-reader`；本项目目前通过 GitHub 分发，不要求 npm 同名包已经发布。
+仓库提交了构建好的 `lib/`，通过 Git 地址安装不需要在安装时执行构建脚本。插件包名是 `dsh-zhijian-reader`；本项目目前通过 GitHub 分发，不要求 npm 同名包已经发布。
 
 也可下载源码后，在关闭 Harness 的状态下使用本地辅助安装器：
 
@@ -40,7 +42,7 @@ node install.mjs --profile /absolute/path/to/profile
 命令行用户也可以使用官方插件安装入口：
 
 ```sh
-dsh plugin --profile desktop add github:qiufengsir/dsh-novel-reader
+dsh plugin --profile desktop add github:qiufengsir/dsh-zhijian-reader
 ```
 
 项目的 `engines.dsh` 精确声明已核对的 `0.2.1-rc.2`，尚未验证其他版本时不扩大兼容范围。
@@ -86,8 +88,8 @@ dsh plugin --profile desktop add github:qiufengsir/dsh-novel-reader
 需要 **Node.js 22+**。构建和本地测试仅使用 Node.js 标准库；`devDependencies` 记录兼容的 Harness 开发接口，不需要先安装它们即可执行以下检查。
 
 ```sh
-git clone https://github.com/qiufengsir/dsh-novel-reader.git
-cd dsh-novel-reader
+git clone https://github.com/qiufengsir/dsh-zhijian-reader.git
+cd dsh-zhijian-reader
 npm run build
 npm test
 npm run check
@@ -115,14 +117,14 @@ python -m http.server 8765 --bind 127.0.0.1
 | `build.mjs` | 生成 Harness 客户端模块 |
 | `lib/index.js` | 宿主插件入口 |
 | `lib/client.js` | 已构建客户端入口 |
-| `cordis.patch.yml` | 注册 `ui-novel-reader` 插件行 |
+| `cordis.patch.yml` | 注册 `ui-zhijian-reader` 插件行 |
 | `locale/`、`icon.svg` | 插件管理器的展示名称、描述与图标 |
 | `install.mjs` | 可选的本地 profile 安装辅助工具 |
 | `test/` | 回归测试及自写示例文本 |
 
 ### 插件契约
 
-插件通过 `dsh.bundle.patch` 声明组合包，通过 `dsh.client` 和 `./client` 导出客户端入口，使用 Harness 提供的 React。客户端模块导出 `inject/apply`，通过 `sidebarRightTabs` 注册 `novel-reader` 类型，并在 `sidebar.right.pane.tab` slot 挂载界面。第三方标签使用 `extension` 优先级，注册和样式生命周期由 `ctx.effect` 管理。
+插件通过 `dsh.bundle.patch` 声明组合包，通过 `dsh.client` 和 `./client` 导出客户端入口，使用 Harness 提供的 React。客户端模块导出 `inject/apply`，通过 `sidebarRightTabs` 注册 `dsh-zhijian-reader` 类型，并在 `sidebar.right.pane.tab` slot 挂载界面。第三方标签使用 `extension` 优先级，注册和样式生命周期由 `ctx.effect` 管理。
 
 参考上游：[官方打包与安装教程](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.md)、[插件展示元信息](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cookbook/adding-a-package.zh.md#plugin-display-metadata)、[右侧栏浏览器插件](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/client/ui-sidebar-browser)。
 
@@ -152,6 +154,6 @@ No direct effect: reading state and novel text are not inserted into model reque
 
 ## 参与与许可
 
-欢迎提交 [Issue](https://github.com/qiufengsir/dsh-novel-reader/issues) 或 Pull Request，开发约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。请使用可公开分享的最小示例复现问题。
+欢迎提交 [Issue](https://github.com/qiufengsir/dsh-zhijian-reader/issues) 或 Pull Request，开发约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。请使用可公开分享的最小示例复现问题。
 
 [MIT License](LICENSE) © 2026 qiufengsir。仓库不附带第三方小说。

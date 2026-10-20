@@ -1,5 +1,5 @@
 function mountReader(root, { taskSource } = {}) {
-  const C = globalThis.NovelReaderCore;
+  const C = globalThis.ZhijianReaderCore;
   let db,
     books = [],
     book,
@@ -53,14 +53,14 @@ function mountReader(root, { taskSource } = {}) {
   const button = (text, fn, attrs = {}) =>
     el("button", { type: "button", onClick: fn, ...attrs }, text);
   root.className = "nr";
-  root.setAttribute("aria-label", "拾页 · 小说阅读器");
+  root.setAttribute("aria-label", "纸间 · 小说阅读器");
   const header = el(
     "header",
     {},
     el(
       "div",
       {},
-      el("div", { class: "brand" }, "拾页 ", el("small", {}, "READER")),
+      el("div", { class: "brand" }, "纸间 ", el("small", {}, "READER")),
       el("small", {}, "让故事，慢慢发生。"),
     ),
   );
@@ -935,6 +935,7 @@ function mountReader(root, { taskSource } = {}) {
   window.addEventListener("pagehide", unload);
   const resizeObserver = new ResizeObserver(updateFooterValues);
   resizeObserver.observe(main);
+  // Keep the legacy storage key across renames so existing books, notes and progress remain available.
   const request = indexedDB.open("dsh-novel-reader-v1", 1);
   request.onupgradeneeded = () => {
     request.result.createObjectStore("books", { keyPath: "id" });

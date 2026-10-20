@@ -16,7 +16,7 @@ function createPreviewTaskSource() {
     status = store(new Map([[sessionId, { running: false }]])),
     list = store({ phase: "ready", byId: { [sessionId]: { displayTitle: "模拟开发项目（仅预览）", running: false } } }),
     binding = { session, eventSource };
-  const source = NovelReaderTaskLink.createSource({
+  const source = ZhijianReaderTaskLink.createSource({
     sessions: { list, binding: (id) => id === sessionId ? binding : undefined },
     uiSession: { sessionStatus: status },
   }, sessionId);

@@ -269,5 +269,5 @@
 
   const api = { createSource };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
-  else root.NovelReaderTaskLink = api;
+  else root.ZhijianReaderTaskLink = api;
 })(globalThis);

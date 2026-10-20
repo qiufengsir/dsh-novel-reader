@@ -68,5 +68,5 @@
   }
   const api = { decode, chapters, search };
   if (typeof module !== "undefined") module.exports = api;
-  else root.NovelReaderCore = api;
+  else root.ZhijianReaderCore = api;
 })(globalThis);
