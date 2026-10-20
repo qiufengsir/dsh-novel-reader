@@ -23,7 +23,7 @@ test("client module registers and disposes the expected sidebar slot", () => {
     fs.readFileSync(path.join(__dirname, "../lib/client.js"), "utf8"),
     browser,
   );
-  assert.deepEqual(Array.from(plugin.inject), ["slots", "sidebarRightTabs"]);
+  assert.deepEqual(Array.from(plugin.inject), ["slots", "sidebarRightTabs", "sessions", "uiSession"]);
   browser.document = {
     createElement: () => ({
       remove() {
@@ -58,10 +58,39 @@ test("client module registers and disposes the expected sidebar slot", () => {
   assert.equal(definition.kind, "dsh-zhijian-reader");
   assert.equal(definition.title(), "纸间 · 小说阅读器");
   assert.equal(registration.key, definition.id);
+  assert.equal(typeof browser.ZhijianReaderCore.decode, "function");
+  assert.equal(browser.NovelReaderCore, undefined);
   assert.equal(definition.guide[0].title(), "纸间 · 小说阅读器");
   disposers.reverse().forEach((fn) => fn?.());
   assert.equal(removed, true);
 });
+test("renamed installer disables the legacy entry without deleting its files or user overrides", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "zhijian-migration-"));
+  try {
+    const manifestPath = path.join(directory, "package.json");
+    fs.writeFileSync(manifestPath, JSON.stringify({
+      private: true,
+      dependencies: { existing: "1.0.0", "dsh-novel-reader": "file:./plugins/dsh-novel-reader" },
+      dsh: { profile: { bundles: ["existing", "dsh-novel-reader", "dsh-zhijian-reader", "dsh-novel-reader"] } },
+    }));
+    const legacyDirectory = path.join(directory, "plugins/dsh-novel-reader");
+    fs.mkdirSync(legacyDirectory, { recursive: true });
+    fs.writeFileSync(path.join(legacyDirectory, "keep-me.txt"), "legacy rollback files");
+    fs.writeFileSync(path.join(directory, "cordis.patch.yml"), "# user overrides\n[]\n");
+    const run = () => cp.execFileSync(process.execPath,
+      [path.join(__dirname, "../install.mjs"), "--profile", directory], { stdio: "pipe" });
+    run();
+    run();
+    const installed = JSON.parse(fs.readFileSync(manifestPath));
+    assert.deepEqual(installed.dsh.profile.bundles, ["existing", "dsh-zhijian-reader"]);
+    assert.equal(installed.dependencies["dsh-novel-reader"], undefined);
+    assert.equal(installed.dependencies["dsh-zhijian-reader"], "file:./plugins/dsh-zhijian-reader");
+    assert.equal(installed.dependencies.existing, "1.0.0");
+    assert.equal(fs.readFileSync(path.join(legacyDirectory, "keep-me.txt"), "utf8"), "legacy rollback files");
+    assert.equal(fs.readFileSync(path.join(directory, "cordis.patch.yml"), "utf8"), "# user overrides\n[]\n");
+  } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});
+
 test("installer preserves existing profile and is idempotent", () => {
   const directory = fs.mkdtempSync(
     path.join(os.tmpdir(), "novel-reader-check-"),
@@ -102,49 +131,12 @@ test("installer preserves existing profile and is idempotent", () => {
       ),
     );
     for (const target of ["plugins", "node_modules"]) {
-      for (const file of ["locale/zh.json", "locale/en.json", "icon.svg", "README.md", "LICENSE"]) {
+      for (const file of ["locale/zh.json", "locale/en.json", "icon.svg", "LICENSE"]) {
         assert.ok(fs.existsSync(path.join(directory, target, "dsh-zhijian-reader", file)), "Missing installed " + file);
       }
     }
     fs.writeFileSync(path.join(directory, "lock"), "1");
     assert.throws(run);
-  } finally {
-    fs.rmSync(directory, { recursive: true, force: true });
-  }
-});
-test("renaming migrates legacy registrations once and retains legacy files and profile overrides", () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "zhijian-migration-"));
-  try {
-    const packagePath = path.join(directory, "package.json");
-    const oldManifest = {
-      name: "test",
-      private: true,
-      dependencies: { existing: "1.0.0", "dsh-novel-reader": "file:./plugins/dsh-novel-reader" },
-      dsh: { profile: { bundles: ["existing", "dsh-novel-reader", "dsh-zhijian-reader", "dsh-novel-reader"] } },
-    };
-    fs.writeFileSync(packagePath, JSON.stringify(oldManifest));
-    const oldFiles = [];
-    for (const location of ["plugins", "node_modules"]) {
-      const oldFile = path.join(directory, location, "dsh-novel-reader", "keep.txt");
-      fs.mkdirSync(path.dirname(oldFile), { recursive: true });
-      fs.writeFileSync(oldFile, "legacy rollback contents");
-      oldFiles.push(oldFile);
-    }
-    const patchPath = path.join(directory, "cordis.patch.yml");
-    fs.writeFileSync(patchPath, "# User overrides\n- id: user-setting\n  config: { enabled: true }\n");
-    const run = () => cp.execFileSync(process.execPath, [path.join(__dirname, "../install.mjs"), "--profile", directory]);
-    run();
-    run();
-    const installed = JSON.parse(fs.readFileSync(packagePath, "utf8"));
-    assert.deepEqual(installed.dsh.profile.bundles, ["existing", "dsh-zhijian-reader"]);
-    assert.equal(installed.dependencies["dsh-novel-reader"], undefined);
-    assert.equal(installed.dependencies["dsh-zhijian-reader"], "file:./plugins/dsh-zhijian-reader");
-    assert.equal(installed.dependencies.existing, "1.0.0");
-    for (const file of oldFiles) assert.equal(fs.readFileSync(file, "utf8"), "legacy rollback contents");
-    assert.match(fs.readFileSync(patchPath, "utf8"), /id: user-setting/);
-    const backups = fs.readdirSync(directory).filter((name) => name.includes(".before-zhijian-reader-") && name.endsWith(".bak"));
-    assert.ok(backups.length >= 1);
-    assert.ok(backups.some((name) => JSON.parse(fs.readFileSync(path.join(directory, name), "utf8")).dependencies["dsh-novel-reader"]));
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

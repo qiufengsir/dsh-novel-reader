@@ -17,11 +17,20 @@
       margin: auto;
       box-shadow: 0 0 50px #26352820;
     }
+    body:has(.preview-controls) { display: flex; flex-direction: column; }
+    body:has(.preview-controls) #reader { flex: 1; min-height: 0; width: 100%; height: auto; }
+    .preview-controls { padding: 8px 12px; background: #253c30; color: #f4f3e9; display: flex; gap: 6px; flex-wrap: wrap; font: 12px system-ui; }
+    .preview-controls strong { flex-basis: 100%; font-weight: 500; }
+    .preview-controls button { font: inherit; border: 1px solid #677e6b; background: transparent; color: inherit; border-radius: 5px; padding: 5px 8px; cursor: pointer; }
   </style>
   <div id="reader"></div>
   <script src="src/core.cjs"></script>
+  <script src="src/task-link.cjs"></script>
   <script src="src/reader.js"></script>
+  <script src="scripts/preview-task.js"></script>
   <script>
-    mountReader(document.getElementById("reader"));
+    const previewWidth = Number(new URLSearchParams(location.search).get("width"));
+    if (previewWidth >= 260 && previewWidth <= 900) document.getElementById("reader").style.maxWidth = previewWidth + "px";
+    mountReader(document.getElementById("reader"), { taskSource: createPreviewTaskSource() });
   </script>
 </html>

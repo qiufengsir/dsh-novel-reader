@@ -1,6 +1,6 @@
 {
   "name": "dsh-zhijian-reader",
-  "version": "1.0.1",
+  "version": "1.1.0-beta.2",
   "description": "纸间：本地小说阅读器侧栏插件",
   "type": "module",
   "main": "lib/index.js",
@@ -14,7 +14,9 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-ui-sidebar-right"
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-api-session-controller"
       ],
       "platform": "web"
     },
@@ -26,7 +28,7 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "test": "node --test test/core.test.cjs test/integration.test.cjs test/storage-compatibility.test.cjs",
+    "test": "node --test test/core.test.cjs test/integration.test.cjs test/storage-compatibility.test.cjs test/task-link.test.cjs",
     "check": "node --check lib/client.js && node scripts/verify-package.mjs",
     "prepack": "node build.mjs"
   },
@@ -37,6 +39,7 @@
     "icon.svg",
     "cordis.patch.yml",
     "README.md",
+    "docs/TASK_LINKING.md",
     "LICENSE"
   ],
   "license": "MIT",
@@ -73,6 +76,8 @@
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
     "@deepseek-ai/dsh-client-ui-sidebar-right": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-session": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.2",
     "react": "^18.2.0"
   }
 }

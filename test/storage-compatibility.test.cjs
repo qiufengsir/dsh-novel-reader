@@ -11,10 +11,13 @@ test("renamed reader loads books, preferences and positions from the existing da
       this.children = [];
       this.dataset = {};
       this.style = { setProperty() {}, removeProperty() {} };
-      this.classList = { add() {}, remove() {} };
+      this.classList = { add() {}, remove() {}, toggle() {} };
     }
     setAttribute(key, value) { this[key] = value; }
     addEventListener() {}
+    removeEventListener() {}
+    removeAttribute(key) { delete this[key]; }
+    contains(node) { return node === this || this.children.some(child => child instanceof Element && child.contains(node)); }
     append(...children) { this.children.push(...children); }
     replaceChildren(...children) { this.children = children; }
     get textContent() { return this.children.map((child) => typeof child === "string" ? child : child.textContent).join(""); }
